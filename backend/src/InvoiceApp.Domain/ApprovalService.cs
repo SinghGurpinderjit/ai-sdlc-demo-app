@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace InvoiceApp.Domain;
 
 /// <summary>
@@ -6,6 +8,9 @@ namespace InvoiceApp.Domain;
 /// </summary>
 public class ApprovalService
 {
+    private const decimal ManagerApprovalLimit = 50_000m;
+    private const decimal DirectorApprovalLimit = 500_000m;
+
     private readonly IInvoiceRepository _repository;
 
     public ApprovalService(IInvoiceRepository repository)
@@ -28,10 +33,25 @@ public class ApprovalService
         return invoice;
     }
 
-    public Invoice Approve(string invoiceId, string approver)
+    public Invoice Approve(string invoiceId, string approver, string role)
     {
         var invoice = Find(invoiceId);
         EnsurePending(invoice);
+
+        var limit = role switch
+        {
+            "Manager" => ManagerApprovalLimit,
+            "Director" => DirectorApprovalLimit,
+            _ => throw new InvalidOperationException($"Role '{role}' is not authorized to approve invoices.")
+        };
+
+        if (invoice.Amount > limit)
+        {
+            var formattedLimit = limit.ToString(CultureInfo.InvariantCulture);
+            var formattedAmount = invoice.Amount.ToString(CultureInfo.InvariantCulture);
+            throw new InvalidOperationException(
+                $"{role} approval limit of {formattedLimit} was exceeded by invoice amount {formattedAmount}.");
+        }
 
         invoice.Status = InvoiceStatus.Approved;
         invoice.DecidedBy = approver;
