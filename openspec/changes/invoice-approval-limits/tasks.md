@@ -2,8 +2,8 @@
 
 ## 1. Baseline
 
-- [ ] 1.1 Run `dotnet test backend/InvoiceApp.sln` before implementation and save the baseline result; verify the record includes the command, outcome, and any existing failures.
-- [ ] 1.2 On .NET 8, install the compatible Stryker version with `dotnet tool install -g dotnet-stryker --version 4.13.0`; measure and record the baseline mutation score for invoice approval. Verify the report identifies the tool/version, target, score, and report location for later comparison.
+- [x] 1.1 Run `dotnet test backend/InvoiceApp.sln` before implementation and save the baseline result; verify the record includes the command, outcome, and any existing failures.
+- [x] 1.2 On .NET 8, install the compatible Stryker version with `dotnet tool install -g dotnet-stryker --version 4.13.0`; measure and record the baseline mutation score for invoice approval. Verify the report identifies the tool/version, target, score, and report location for later comparison.
 
 ## 2. Role Migration (Separate Scope)
 
