@@ -14,7 +14,7 @@
 
 - [x] 3.1 Implement the Manager limit of 50,000 and Director limit of 500,000 in the domain, using `decimal`; add xUnit boundary tests for each inclusive limit and just-over-limit failure, asserting clear reasons and unchanged status/history on failure.
 - [x] 3.2 Connect authenticated identity and role to the domain decision flow without accepting actor data from the request body; verify API failures preserve the server reason and that the UI displays it without implementing approval policy.
-- [ ] 3.3 Commit the tested single-approver limit slice independently; verify the commit contains its implementation and tests but no two-approver escalation.
+- [x] 3.3 Commit the tested single-approver limit slice independently; verify the commit contains its implementation and tests but no two-approver escalation (`2e0c4b8`).
 
 ## 4. Two-Approver Escalation
 
