@@ -18,20 +18,21 @@
 
 ## 4. Two-Approver Escalation
 
-- [ ] 4.1 Obtain an explicit decision on the role permitted to make the first approval above 500,000, update the capability spec with that decision, and verify `openspec validate invoice-approval-limits` passes; do not begin 4.2 before this task is complete.
-- [ ] 4.2 Implement the above-500,000 approval progression with ordered approval history and add xUnit tests for a pending first approval, a distinct Director second approval, repeated-user rejection, and non-Director second-approval failure; verify every failed attempt leaves status and history unchanged with a clear reason.
+- [ ] 4.1 Record the policy that either a Manager or Director may make the first approval above 500,000 and a different Director must make the second; update the capability spec and verify `openspec validate invoice-approval-limits` passes before beginning 4.2.
+- [ ] 4.2 Implement the above-500,000 approval progression with ordered approval history in the Domain and API. Add xUnit tests for Manager-first and Director-first approvals that leave the invoice PendingApproval, a distinct Director second approval, repeated-user rejection, and non-Director second-approval failure; verify every failed attempt leaves status and history unchanged with a clear reason and `dotnet test backend/InvoiceApp.sln` passes.
 - [ ] 4.3 Keep explicit rejection independent of approval escalation and add/retain xUnit coverage that a pending invoice becomes Rejected with its reason; verify `dotnet test backend/InvoiceApp.sln` passes.
-- [ ] 4.4 After 4.1 and 4.2 are complete, update the invoice list and approvals view under `backend/src/InvoiceApp.Api/wwwroot/` to show server-provided escalation progress: zero of two approvals with first approval needed, one of two with “Director approval needed,” and Approved with two of two. Add page-object-based Playwright coverage for these states; verify the UI does not implement approval policy and `npm test` passes.
+- [ ] 4.4 After 4.1 and 4.2 are complete, update the invoice list and pending-approvals view under `backend/src/InvoiceApp.Api/wwwroot/` to present the server-provided ordered approval history and progress: zero of two with “First approval needed,” one of two with “Director approval needed,” and completed as “Approved 2/2” with both approvers' identity/name, role, and approval time. Details must be accessible by hover, keyboard focus, and touch; the UI remains presentation-only. Run `dotnet test backend/InvoiceApp.sln`; Playwright verification is in Task 5.
 - [ ] 4.5 Commit the tested escalation slice, including its UI progress and tests, separately after the single-approver commit; verify the commit history and diff show distinct implementation/test boundaries.
 
 ## 5. UI End-to-End Verification
 
 - [ ] 5.1 Add a Playwright page-object-based E2E test for a Manager attempting to approve an invoice for 50,000.01; verify the UI displays the server's rejection reason and the invoice remains PendingApproval, using role/label locators and passing `npm test`.
+- [ ] 5.2 Add Playwright page-object-based E2E coverage for Task 4 escalation UI: verify 0/2 with first approval needed, 1/2 with “Director approval needed,” approver identity/role/time details using hover, keyboard focus, and touch, and Approved 2/2 after a distinct Director approves. Verify completed invoices leave the pending list and `npm test` passes.
 
 ## 6. Review and Assignment Deliverables
 
 - [ ] 6.1 Run the full xUnit and Playwright suites and repeat mutation measurement with the baseline tool/configuration; verify results are recorded and the post-change mutation score is compared with baseline.
 - [ ] 6.2 Complete the required PR review and list every finding in the PR description with a `fixed`, `dismissed` plus reason, or `deferred` plus reason verdict; verify blocking findings are resolved or explicitly reported before acceptance.
-- [ ] 6.3 Complete the required interaction log in the repository-root `ai-interactions.jsonl`; verify it records prompts, agent/tool activity, the unresolved-role clarification, test evidence, and separate commit boundaries without secrets.
+- [ ] 6.3 Complete the required interaction log in the repository-root `ai-interactions.jsonl`; verify it records prompts, agent/tool activity, the approved policy decision that either a Manager or Director may approve first above 500,000 and a different Director must approve second, test evidence, and separate commit boundaries without secrets.
 - [ ] 6.4 Prepare the assignment write-up with the implementation sequence, test/mutation results, and review verdicts; verify all reported results match saved evidence.
 - [ ] 6.5 Record the required demonstration video showing role-based approval limits, an over-limit UI failure, and explicit rejection; verify the visible outcomes match the write-up and test evidence.
