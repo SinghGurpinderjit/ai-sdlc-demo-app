@@ -125,16 +125,61 @@ function getArtifacts(hookEvent) {
   return [...artifacts];
 }
 
-function getSubagents(eventName, hookEvent) {
+function getRelatedSubagentInvocation(hookEvent) {
+  const agentId = hookEvent.agent_id ?? hookEvent.agentId;
+  if (!agentId || !fs.existsSync(logPath)) {
+    return null;
+  }
+
+  const lines = fs.readFileSync(logPath, "utf8").split(/\r?\n/).filter(Boolean);
+  for (let index = lines.length - 1; index >= 0; index -= 1) {
+    try {
+      const priorRecord = JSON.parse(lines[index]);
+      if (priorRecord.event !== "PreToolUse") {
+        continue;
+      }
+
+      const toolName = priorRecord.tool_name ?? priorRecord.payload?.tool_name;
+      const toolUseId = priorRecord.payload?.tool_use_id;
+      if (!/^(runSubagent|task)$/i.test(toolName ?? "") || !toolUseId?.startsWith(agentId)) {
+        continue;
+      }
+
+      return priorRecord.payload?.tool_input ?? null;
+    } catch {
+      continue;
+    }
+  }
+
+  return null;
+}
+
+function getSubagents(eventName, hookEvent, relatedInvocation) {
   if (eventName !== "SubagentStart" && eventName !== "SubagentStop") {
     return [];
   }
 
+  const task = hookEvent.task
+    ?? hookEvent.delegated_task
+    ?? relatedInvocation?.description
+    ?? relatedInvocation?.prompt
+    ?? relatedInvocation?.query
+    ?? null;
+
   return [{
-    name: hookEvent.agent_name ?? hookEvent.agentName ?? "unknown",
-    type: hookEvent.agent_type ?? hookEvent.agentType ?? "custom",
-    task: hookEvent.task ?? hookEvent.delegated_task ?? null,
+    name: hookEvent.agent_name
+      ?? hookEvent.agentName
+      ?? hookEvent.agent_display_name
+      ?? hookEvent.agentDisplayName
+      ?? relatedInvocation?.agentName
+      ?? hookEvent.agent_type
+      ?? hookEvent.agentType
+      ?? "unknown",
+    type: "sub-agent",
+    task: sanitize(task),
     status: getStatus(eventName, hookEvent),
+    agent_id: hookEvent.agent_id ?? hookEvent.agentId ?? null,
+    transcript_path: hookEvent.transcript_path ?? hookEvent.transcriptPath ?? null,
   }];
 }
 
@@ -179,6 +224,9 @@ try {
 
 const eventName = getEventName(event);
 const timestamp = toIsoTimestamp(event.timestamp);
+const relatedSubagentInvocation = eventName === "SubagentStart" || eventName === "SubagentStop"
+  ? getRelatedSubagentInvocation(event)
+  : null;
 const missingMetadata = unavailableMetadata.filter((field) => {
   if (field === "model") {
     return event.model == null && process.env.AI_MODEL_NAME == null;
@@ -202,12 +250,24 @@ const record = {
   model: event.model ?? process.env.AI_MODEL_NAME ?? null,
   mode: event.mode ?? process.env.AI_MODE ?? null,
   related_ids: Array.isArray(event.related_ids) ? event.related_ids : [],
-  parent_task: event.parent_task ?? event.parentTask ?? process.env.AI_PARENT_TASK ?? null,
+  parent_task: event.parent_task
+    ?? event.parentTask
+    ?? relatedSubagentInvocation?.description
+    ?? relatedSubagentInvocation?.prompt
+    ?? relatedSubagentInvocation?.query
+    ?? process.env.AI_PARENT_TASK
+    ?? null,
   context: event.context ?? process.env.AI_INTERACTION_CONTEXT ?? "AI in SDLC Assignment",
   request: sanitize(getRequest(eventName, event)),
-  response: sanitize(event.last_assistant_message ?? event.response ?? event.tool_response ?? event.toolResult ?? null),
+  response: sanitize(event.last_assistant_message
+    ?? event.response
+    ?? event.tool_response
+    ?? event.tool_result?.text_result_for_llm
+    ?? event.toolResult?.textResultForLlm
+    ?? event.toolResult
+    ?? null),
   skills_used: sanitize(event.skills_used ?? parseJsonEnvironmentVariable("AI_SKILLS_USED", [])),
-  subagents_used: sanitize(getSubagents(eventName, event)),
+  subagents_used: sanitize(getSubagents(eventName, event, relatedSubagentInvocation)),
   mcp_tools_used: sanitize(getMcpTools(eventName, event)),
   tools_used: event.tool_name ?? event.toolName ? [event.tool_name ?? event.toolName] : [],
   suggestion: sanitize(event.suggestion ?? null),

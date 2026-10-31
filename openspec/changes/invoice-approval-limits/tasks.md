@@ -7,8 +7,8 @@
 
 ## 2. Role Migration (Separate Scope)
 
-- [ ] 2.1 Migrate API authorization from the current `Approver`/`Admin` role names to explicit `Manager`/`Director` assignments and add focused authorization coverage; verify allowed and denied roles, including that the old names are not implicit aliases.
-- [ ] 2.2 Update configured demo accounts to provide the assignment's `Manager` and `Director` roles; verify each account can sign in and receives the configured role without relying on role-name equivalence.
+- [x] 2.1 Migrate API authorization from the current `Approver`/`Admin` role names to explicit `Manager`/`Director` and add focused authorization coverage; verify allowed and denied roles, including that the old names are not implicit aliases.
+- [x] 2.2 Update configured demo accounts to provide the `Manager` and `Director` roles; verify each account can sign in and receives the configured role without relying on role-name equivalence.
 
 ## 3. Single-Approver Limits
 

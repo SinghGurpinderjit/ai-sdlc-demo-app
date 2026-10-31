@@ -70,7 +70,7 @@ public class InvoicesController : ApiControllerBase
     public ActionResult<Invoice> Submit(string id) => Handle(() => _approvals.Submit(id));
 
     [HttpDelete("{id}")]
-    [RequireRole("Admin")]
+    [RequireRole("Director")]
     public IActionResult Delete(string id) =>
         _repository.Remove(id) ? NoContent() : NotFound();
 }
