@@ -26,6 +26,50 @@
   function show(id, visible) { $(id).hidden = !visible; }
   function showError(id, message) { const p = $(id); p.textContent = message || ''; p.hidden = !message; }
 
+  function approvalState(invoice) {
+    const state = el('div', { class: 'approval-state' });
+    if (invoice.approvalProgress) {
+      state.append(el('strong', { class: 'approval-progress' }, invoice.approvalProgress));
+    }
+
+    const history = invoice.approvalHistory || [];
+    if (history.length) {
+      const detailsText = history.map((approval) => {
+        const name = approval.approverName || approval.approverId;
+        const time = new Date(approval.approvedAt).toLocaleString();
+        return `${name}, ${approval.role}, ${time}`;
+      }).join('; ');
+      const entries = el('ol', { class: 'approval-history' });
+      history.forEach((approval, index) => {
+        const name = approval.approverName || approval.approverId;
+        const time = new Date(approval.approvedAt).toLocaleString();
+        const entry = el('span', {
+          role: 'group',
+          'aria-label': `Approval by ${name}, ${approval.role}, ${time}`
+        },
+        el('span', {}, `${name} (${approval.role})`),
+        el('time', { datetime: approval.approvedAt, 'aria-label': `Approval time for ${name}` }, time));
+        entries.append(el('li', {}, entry));
+      });
+      entries.hidden = true;
+      const toggle = el('button', {
+        type: 'button',
+        class: 'secondary approval-history-toggle',
+        'aria-expanded': 'false',
+        title: detailsText,
+        'aria-label': `Approval history for ${invoice.id}: ${detailsText}`
+      }, `Approver details (${history.length})`);
+      toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') !== 'true';
+        toggle.setAttribute('aria-expanded', String(expanded));
+        entries.hidden = !expanded;
+      });
+      state.append(el('div', { class: 'approval-details' }, toggle, entries));
+    }
+
+    return state;
+  }
+
   function render() {
     const signedIn = !!session;
     show('login-view', !signedIn);
@@ -57,6 +101,7 @@
         el('td', {}, invoice.customerName),
         el('td', {}, money.format(invoice.amount)),
         el('td', { class: `status status-${invoice.status}` }, invoice.status.replace(/([a-z])([A-Z])/g, '$1 $2')),
+        el('td', {}, approvalState(invoice)),
         actions);
     }));
   }
@@ -74,6 +119,7 @@
 
       return el('li', {},
         el('span', {}, `${invoice.id} · ${invoice.customerName} · ${money.format(invoice.amount)}`),
+        approvalState(invoice),
         el('span', {}, approve),
         el('div', { class: 'reject-row' }, reason, reject));
     }));

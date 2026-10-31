@@ -38,6 +38,13 @@ public class ApprovalService
         var invoice = Find(invoiceId);
         EnsurePending(invoice);
 
+        if (invoice.Amount > DirectorApprovalLimit)
+        {
+            ApproveEscalated(invoice, approver, role);
+            _repository.Update(invoice);
+            return invoice;
+        }
+
         var limit = role switch
         {
             "Manager" => ManagerApprovalLimit,
@@ -53,11 +60,54 @@ public class ApprovalService
                 $"{role} approval limit of {formattedLimit} was exceeded by invoice amount {formattedAmount}.");
         }
 
+        invoice.ApprovalHistory.Add(CreateApprovalRecord(approver, role));
         invoice.Status = InvoiceStatus.Approved;
         invoice.DecidedBy = approver;
         invoice.DecidedAt = DateTime.UtcNow;
         _repository.Update(invoice);
         return invoice;
+    }
+
+    private static void ApproveEscalated(Invoice invoice, string approver, string role)
+    {
+        if (invoice.ApprovalHistory.Count == 0)
+        {
+            if (role is not ("Manager" or "Director"))
+            {
+                throw new InvalidOperationException($"Role '{role}' is not authorized to approve invoices.");
+            }
+
+            invoice.ApprovalHistory.Add(CreateApprovalRecord(approver, role));
+            return;
+        }
+
+        if (invoice.ApprovalHistory.Any(approval =>
+                string.Equals(approval.ApproverId, approver, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidOperationException("A different approver is required for the second approval.");
+        }
+
+        if (role != "Director")
+        {
+            throw new InvalidOperationException("The second approver must be a Director.");
+        }
+
+        if (invoice.ApprovalHistory.Count != 1)
+        {
+            throw new InvalidOperationException("This invoice already has the required approval history.");
+        }
+
+        var approval = CreateApprovalRecord(approver, role);
+        invoice.ApprovalHistory.Add(approval);
+        invoice.Status = InvoiceStatus.Approved;
+        invoice.DecidedBy = approver;
+        invoice.DecidedAt = approval.ApprovedAt;
+    }
+
+    private static ApprovalRecord CreateApprovalRecord(string approver, string role)
+    {
+        var approvedAt = DateTime.UtcNow;
+        return new ApprovalRecord(approver, approver, role, approvedAt);
     }
 
     public Invoice Reject(string invoiceId, string approver, string reason)

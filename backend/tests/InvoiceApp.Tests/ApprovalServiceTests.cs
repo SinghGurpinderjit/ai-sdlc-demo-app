@@ -84,8 +84,113 @@ public class ApprovalServiceTests
     }
 
     [Theory]
+    [InlineData("Manager", "demo.manager")]
+    [InlineData("Director", "demo.director")]
+    public void Approve_FirstApprovalAboveDirectorLimitRemainsPending(string role, string approver)
+    {
+        var invoice = InvoiceWith("INV-1", InvoiceStatus.PendingApproval);
+        invoice.Amount = 500_000.01m;
+        var service = ServiceFor(invoice);
+
+        var result = service.Approve("INV-1", approver, role);
+
+        Assert.Equal(InvoiceStatus.PendingApproval, result.Status);
+        Assert.Null(result.DecidedBy);
+        Assert.Null(result.DecidedAt);
+        var approval = Assert.Single(result.ApprovalHistory);
+        Assert.Equal(approver, approval.ApproverId);
+        Assert.Equal(approver, approval.ApproverName);
+        Assert.Equal(role, approval.Role);
+        Assert.NotEqual(default, approval.ApprovedAt);
+        Assert.Equal("1/2 - Director approval needed", result.ApprovalProgress);
+    }
+
+    [Fact]
+    public void Approve_DistinctDirectorCompletesEscalationInOrder()
+    {
+        var invoice = InvoiceWith("INV-1", InvoiceStatus.PendingApproval);
+        invoice.Amount = 500_000.01m;
+        var service = ServiceFor(invoice);
+        service.Approve("INV-1", "demo.manager", "Manager");
+
+        var result = service.Approve("INV-1", "demo.director", "Director");
+
+        Assert.Equal(InvoiceStatus.Approved, result.Status);
+        Assert.Equal("demo.director", result.DecidedBy);
+        Assert.Equal(result.ApprovalHistory[1].ApprovedAt, result.DecidedAt);
+        Assert.Collection(result.ApprovalHistory,
+            first =>
+            {
+                Assert.Equal("demo.manager", first.ApproverId);
+                Assert.Equal("Manager", first.Role);
+            },
+            second =>
+            {
+                Assert.Equal("demo.director", second.ApproverId);
+                Assert.Equal("Director", second.Role);
+            });
+        Assert.Equal("Approved 2/2", result.ApprovalProgress);
+    }
+
+    [Fact]
+    public void Approve_RepeatedFirstApproverLeavesStateAndHistoryUnchanged()
+    {
+        var invoice = InvoiceWith("INV-1", InvoiceStatus.PendingApproval);
+        invoice.Amount = 500_000.01m;
+        var service = ServiceFor(invoice);
+        service.Approve("INV-1", "demo.director", "Director");
+        var originalHistory = invoice.ApprovalHistory.ToArray();
+        var originalDecidedAt = invoice.DecidedAt;
+
+        var error = Assert.Throws<InvalidOperationException>(
+            () => service.Approve("INV-1", "DEMO.DIRECTOR", "Director"));
+
+        Assert.Equal("A different approver is required for the second approval.", error.Message);
+        Assert.Equal(InvoiceStatus.PendingApproval, invoice.Status);
+        Assert.Equal(originalHistory, invoice.ApprovalHistory);
+        Assert.Null(invoice.DecidedBy);
+        Assert.Equal(originalDecidedAt, invoice.DecidedAt);
+    }
+
+    [Fact]
+    public void Approve_NonDirectorSecondApproverLeavesStateAndHistoryUnchanged()
+    {
+        var invoice = InvoiceWith("INV-1", InvoiceStatus.PendingApproval);
+        invoice.Amount = 500_000.01m;
+        var service = ServiceFor(invoice);
+        service.Approve("INV-1", "demo.manager", "Manager");
+        var originalHistory = invoice.ApprovalHistory.ToArray();
+
+        var error = Assert.Throws<InvalidOperationException>(
+            () => service.Approve("INV-1", "another.manager", "Manager"));
+
+        Assert.Equal("The second approver must be a Director.", error.Message);
+        Assert.Equal(InvoiceStatus.PendingApproval, invoice.Status);
+        Assert.Equal(originalHistory, invoice.ApprovalHistory);
+        Assert.Null(invoice.DecidedBy);
+        Assert.Null(invoice.DecidedAt);
+    }
+
+    [Fact]
+    public void Reject_AfterFirstEscalatedApprovalPreservesApprovalHistory()
+    {
+        var invoice = InvoiceWith("INV-1", InvoiceStatus.PendingApproval);
+        invoice.Amount = 500_000.01m;
+        var service = ServiceFor(invoice);
+        service.Approve("INV-1", "demo.manager", "Manager");
+        var originalApproval = Assert.Single(invoice.ApprovalHistory);
+
+        var result = service.Reject("INV-1", "demo.director", "Budget withdrawn");
+
+        Assert.Equal(InvoiceStatus.Rejected, result.Status);
+        Assert.Equal("Budget withdrawn", result.DecisionNote);
+        Assert.Equal("demo.director", result.DecidedBy);
+        Assert.Single(result.ApprovalHistory);
+        Assert.Equal(originalApproval, result.ApprovalHistory[0]);
+    }
+
+    [Theory]
     [InlineData("Manager", 50_000.01, "Manager approval limit of 50000 was exceeded by invoice amount 50000.01.")]
-    [InlineData("Director", 500_000.01, "Director approval limit of 500000 was exceeded by invoice amount 500000.01.")]
     public void Approve_OverLimitLeavesDecisionFieldsUnchanged(string role, decimal amount, string expectedReason)
     {
         var decidedAt = new DateTime(2025, 1, 2, 3, 4, 5, DateTimeKind.Utc);
