@@ -2,7 +2,7 @@
 
 ## Background
 
-A single approval is not sufficient for invoices above 500,000. The assignment requires a second, independent review before these invoices can be finalized.
+A single approval is not sufficient for invoices above 500,000. Now It requires a second, independent review before these invoices can be finalized.
 
 ## The idea
 

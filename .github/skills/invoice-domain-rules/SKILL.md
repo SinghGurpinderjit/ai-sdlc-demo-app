@@ -40,5 +40,5 @@ Use this skill when implementing, reviewing, or testing invoice approval behavio
 
 ## Roles and requirements
 
-- The existing app uses `Approver` and `Admin`; the assignment specifies `Manager` and `Director`. Do not assume they are interchangeable or migrate roles without a separately approved OpenSpec task.
+- The existing app uses `Approver` and `Admin`; the requirement specifies `Manager` and `Director`. Do not assume they are interchangeable or migrate roles without a separately approved OpenSpec task.
 - Use active OpenSpec requirements for acceptance criteria. This skill provides shared technical context and must not override the specification.

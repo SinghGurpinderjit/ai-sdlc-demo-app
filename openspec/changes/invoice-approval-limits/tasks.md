@@ -33,4 +33,3 @@
 
 - [x] 6.1 Run the full xUnit and Playwright suites and repeat mutation measurement with the baseline tool/configuration; verify results are recorded and the post-change mutation score is compared with baseline.
 - [ ] 6.2 Open your pull request and use the agent to run the workshop review prompt against its diff. Judge every finding and list it in the PR description as `fixed`, `dismissed` with a reason, or `deferred` with a reason. Verify fixes with relevant tests and clearly identify any unresolved blocking findings.
-- [ ] 6.3 Prepare the assignment write-up with the implementation sequence, test/mutation results, and review verdicts; verify all reported results match saved evidence.
