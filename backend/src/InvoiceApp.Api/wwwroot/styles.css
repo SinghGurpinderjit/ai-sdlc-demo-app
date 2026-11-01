@@ -23,8 +23,22 @@ caption { text-align:left; font-weight:600; padding-bottom:8px; }
 th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); font-size:14px; }
 .status { font-weight:600; }
 .status-PendingApproval { color:#9a6a00; } .status-Approved { color:var(--accent); } .status-Rejected { color:var(--warn); }
+.approval-state { display:grid; gap:6px; }
+.approval-progress { font-size:13px; }
+.approval-details summary { width:fit-content; cursor:pointer; color:var(--accent); font-size:13px; }
+.approval-history { margin:6px 0 0; padding-left:20px; display:grid; gap:4px; }
+.approval-history li > span { display:grid; gap:2px; }
+.approval-history time { color:var(--muted); font-size:12px; }
 #pending-list { list-style:none; padding:0; margin:0; display:grid; gap:12px; }
-#pending-list li { display:grid; grid-template-columns:1fr auto; gap:8px 16px; align-items:center; padding:12px; border:1px solid var(--line); border-radius:8px; }
+#pending-list > li { display:grid; grid-template-columns:1fr auto; gap:8px 16px; align-items:center; padding:12px; border:1px solid var(--line); border-radius:8px; }
+#pending-list > li > .approval-state { grid-column:1 / -1; }
 .reject-row { grid-column:1 / -1; display:flex; gap:8px; }
 .reject-row input { flex:1; }
 [role="alert"] { color:var(--warn); margin:4px 0 0; }
+@media (max-width: 640px) {
+	main { margin:20px auto; padding:0 12px; }
+	#login-view, #invoices-panel, #approvals-panel { padding:16px; }
+	table { display:block; overflow-x:auto; }
+	#pending-list > li { grid-template-columns:1fr; }
+	#pending-list > li > .approval-state, .reject-row { grid-column:auto; }
+}
