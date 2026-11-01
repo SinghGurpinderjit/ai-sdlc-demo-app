@@ -44,5 +44,6 @@ AGENTS.md                 conventions for AI coding agents
 
 ## Use cases
 
-- [UC-1 Bulk invoice approval](docs/use-cases/UC-1-bulk-approval.md)
-- [UC-2 Partial approval](docs/use-cases/UC-2-partial-approval.md)
+- [UC-1-role-based-approval-limits](docs/use-cases/UC-1-role-based-approval-limits.md)
+- [UC-2-high-value-two-approver-escalation](docs/use-cases/UC-2-high-value-two-approver-escalation.md)
+- [UC-3-failed-approval-and-explicit-rejection](docs/use-cases/UC-3-failed-approval-and-explicit-rejection.md)
