@@ -1,6 +1,6 @@
 ---
 name: workflow-orchestrator
-description: "Use as the primary coordinator for the AI-SDLC assignment: delegate specification, implementation, QA, and PR-review tasks to the appropriate subagent, track evidence, and keep the work staged."
+description: "Use as the primary coordinator : delegate specification, implementation, QA, and PR-review tasks to the appropriate subagent, track evidence, and keep the work staged."
 tools: [read, search, agent, todo, execute]
 agents: [spec-architect, feature-developer, qa-validator, pr-reviewer]
 user-invocable: true
