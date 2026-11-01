@@ -26,13 +26,11 @@
 
 ## 5. UI End-to-End Verification
 
-- [ ] 5.1 Add a Playwright page-object-based E2E test for a Manager attempting to approve an invoice for 50,000.01; verify the UI displays the server's rejection reason and the invoice remains PendingApproval, using role/label locators and passing `npm test`.
-- [ ] 5.2 Add Playwright page-object-based E2E coverage for Task 4 escalation UI: verify 0/2 with first approval needed, 1/2 with “Director approval needed,” approver identity/role/time details using hover, keyboard focus, and touch, and Approved 2/2 after a distinct Director approves. Verify completed invoices leave the pending list and `npm test` passes.
+- [x] 5.1 Add a Playwright page-object-based E2E test for a Manager attempting to approve an invoice for 50,000.01; verify the UI displays the server's rejection reason and the invoice remains PendingApproval, using role/label locators and passing `npm test`.
+- [x] 5.2 Add Playwright page-object-based E2E coverage for Task 4 escalation UI: verify 0/2 with first approval needed, 1/2 with “Director approval needed,” approver identity/role/time details using hover, keyboard focus, and touch, and Approved 2/2 after a distinct Director approves. Verify completed invoices leave the pending list and `npm test` passes.
 
 ## 6. Review and Assignment Deliverables
 
-- [ ] 6.1 Run the full xUnit and Playwright suites and repeat mutation measurement with the baseline tool/configuration; verify results are recorded and the post-change mutation score is compared with baseline.
-- [ ] 6.2 Complete the required PR review and list every finding in the PR description with a `fixed`, `dismissed` plus reason, or `deferred` plus reason verdict; verify blocking findings are resolved or explicitly reported before acceptance.
-- [ ] 6.3 Complete the required interaction log in the repository-root `ai-interactions.jsonl`; verify it records prompts, agent/tool activity, the approved policy decision that either a Manager or Director may approve first above 500,000 and a different Director must approve second, test evidence, and separate commit boundaries without secrets.
-- [ ] 6.4 Prepare the assignment write-up with the implementation sequence, test/mutation results, and review verdicts; verify all reported results match saved evidence.
-- [ ] 6.5 Record the required demonstration video showing role-based approval limits, an over-limit UI failure, and explicit rejection; verify the visible outcomes match the write-up and test evidence.
+- [x] 6.1 Run the full xUnit and Playwright suites and repeat mutation measurement with the baseline tool/configuration; verify results are recorded and the post-change mutation score is compared with baseline.
+- [ ] 6.2 Open your pull request and use the agent to run the workshop review prompt against its diff. Judge every finding and list it in the PR description as `fixed`, `dismissed` with a reason, or `deferred` with a reason. Verify fixes with relevant tests and clearly identify any unresolved blocking findings.
+- [ ] 6.3 Prepare the assignment write-up with the implementation sequence, test/mutation results, and review verdicts; verify all reported results match saved evidence.
