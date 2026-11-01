@@ -21,15 +21,27 @@ These are demo accounts for a local, in-memory app. They are not real credential
 
 1. Create an invoice (it starts as a draft).
 2. Submit it for approval.
-3. An approver approves it, or rejects it with a reason.
+3. An authorized user approves it or explicitly rejects it with a reason.
 
-Invoices move through Draft, Pending Approval, then Approved or Rejected.
+Managers can approve invoices up to and including 50,000. Directors can approve invoices up to and including 500,000. An invoice above 500,000 needs two different approvers: a Manager or Director first, followed by a different Director. The first approval leaves the invoice pending; the second completes approval.
+
+A failed approval returns a clear reason and leaves the invoice status and approval history unchanged. Explicit rejection is a separate decision: it sets the status to Rejected and records the reason.
 
 ## Tests
 
 ```
 dotnet test backend/InvoiceApp.sln
 ```
+
+Run the Playwright browser tests from `e2e`:
+
+```powershell
+cd e2e
+npm install
+npm test
+```
+
+Playwright starts the API at `http://localhost:5000` or reuses an existing server there. The current browser tests cover Manager-first escalation and a Manager over-limit failure. If PowerShell blocks the `npm` script, use `npm.cmd` instead.
 
 ## Project layout
 
@@ -38,11 +50,14 @@ backend/
   src/InvoiceApp.Domain   business rules
   src/InvoiceApp.Api      controllers, sign-in, web UI (wwwroot)
   tests/InvoiceApp.Tests  xUnit tests
+e2e/                      Playwright browser tests and page objects
+openspec/                 feature proposals, designs, requirements, and tasks
 docs/use-cases            short feature briefs
 AGENTS.md                 conventions for AI coding agents
 ```
 
 ## Use cases
 
-- [UC-1 Bulk invoice approval](docs/use-cases/UC-1-bulk-approval.md)
-- [UC-2 Partial approval](docs/use-cases/UC-2-partial-approval.md)
+- [UC-1 Role-based invoice approval limits](docs/use-cases/UC-1-role-based-approval-limits.md)
+- [UC-2 High-value two-approver escalation](docs/use-cases/UC-2-high-value-two-approver-escalation.md)
+- [UC-3 Failed approval and explicit rejection](docs/use-cases/UC-3-failed-approval-and-explicit-rejection.md)
